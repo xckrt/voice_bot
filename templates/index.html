@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Голосовой Ассистент</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #assistant-gif {
+            display: none;
+            margin-top: 20px;
+        }
+        #conversation {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            height: 200px;
+            overflow-y: scroll;
+            text-align: left;
+        }
+        .conversation-line {
+            margin-bottom: 10px;
+        }
+        .user-input {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Голосовой Ассистент</h1>
+    <button id="start-button">Запустить Ассистента</button>
+    <div style="display: flex; justify-content: center; margin-top: 20px;">
+        <img id="assistant-gif" src="{{ url_for('static', filename='assistant.gif') }}" alt="Assistant GIF">
+    </div>
+    <div id="conversation"></div>
+
+    <script>
+        document.getElementById('start-button').addEventListener('click', function() {
+            document.getElementById('assistant-gif').style.display = 'block';
+            document.getElementById('conversation').innerHTML += '<div class="conversation-line"><span class="user-input">Скажите что-нибудь:</span></div>';
+            fetch('/start_assistant', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('conversation').innerHTML += '<div class="conversation-line">Ассистент запущен.</div>';
+                        setInterval(updateConversation, 1000);
+                    }
+                });
+        });
+
+        function updateConversation() {
+            fetch('/get_conversation')
+                .then(response => response.json())
+                .then(data => {
+                    const conversationDiv = document.getElementById('conversation');
+                    conversationDiv.innerHTML = '';
+                    data.conversation.forEach(line => {
+                        conversationDiv.innerHTML += `<div class="conversation-line">${line}</div>`;
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
